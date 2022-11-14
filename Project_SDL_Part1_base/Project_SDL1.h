@@ -58,6 +58,13 @@ class sheep : public animal {
     virtual void move();
 };
 
+class wolf : public animal {
+  public:
+    wolf(SDL_Surface *window_surface_ptr);
+    virtual ~wolf();
+    virtual void move();
+};
+
 // Insert here:
 // class wolf, derived from animal
 // Use only sheep at first. Once the application works

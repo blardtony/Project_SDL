@@ -89,6 +89,10 @@ application::application(unsigned n_sheep, unsigned n_wolf)
   {
     _ground->add_animal(new sheep(window_surface_ptr_));
   }
+  for (unsigned i = 0; i < n_wolf; ++i)
+  {
+    _ground->add_animal(new wolf(window_surface_ptr_));
+  }
 }
 
 int application::loop(unsigned period)
@@ -197,9 +201,16 @@ sheep::~sheep()
 void sheep::move()
 {
   //TODO if wolf go other side
+  if (x+speed < frame_width - frame_boundary) {
+    x+=speed;
+  }
+  
+  if (y+speed < frame_height - frame_boundary) {
+    y+=speed;
+  }
 }
 
-/*
+
 //Wolf
 
 wolf::wolf(SDL_Surface *window_surface_ptr):animal("../media/wolf.png", window_surface_ptr)
@@ -210,10 +221,15 @@ wolf::wolf(SDL_Surface *window_surface_ptr):animal("../media/wolf.png", window_s
 wolf::~wolf()
 {
 
+
 }
 
 void wolf::move()
 {
-  TODO if sheep go on him
+  if (x+speed < frame_width - frame_boundary) {
+    x+=speed;
+  }
+  if (y+speed < frame_height - frame_boundary) {
+    y+=speed;
+  }
 }
-*/
