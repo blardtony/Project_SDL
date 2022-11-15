@@ -34,7 +34,6 @@ namespace {
 
     // Helper function to load a png for a specific surface
     // See SDL_ConvertSurface
-    std::cout << SDL_GetBasePath() << std::endl;
     SDL_Surface *loadedSurface = IMG_Load(path.c_str());
 
     if (!loadedSurface)
