@@ -34,7 +34,7 @@ namespace {
 
     // Helper function to load a png for a specific surface
     // See SDL_ConvertSurface
-
+    std::cout << SDL_GetBasePath() << std::endl;
     SDL_Surface *loadedSurface = IMG_Load(path.c_str());
 
     if (!loadedSurface)
@@ -189,7 +189,7 @@ void animal::draw()
 
 //Sheep
 
-sheep::sheep(SDL_Surface *window_surface_ptr):animal("../media/sheep.png", window_surface_ptr)
+sheep::sheep(SDL_Surface *window_surface_ptr):animal(sheep_path, window_surface_ptr)
 {
   speed = 5;
 }
@@ -213,7 +213,7 @@ void sheep::move()
 
 //Wolf
 
-wolf::wolf(SDL_Surface *window_surface_ptr):animal("../media/wolf.png", window_surface_ptr)
+wolf::wolf(SDL_Surface *window_surface_ptr):animal(wolf_path, window_surface_ptr)
 {
   speed = 10;
 }
