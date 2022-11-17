@@ -52,7 +52,7 @@ namespace {
     
     return optimizedSurface;
   }
-} // namespace
+} // namespace 
 
 
 //Application
@@ -121,7 +121,12 @@ int application::loop(unsigned period)
 
 application::~application()
 {
+  delete this->_ground;
 
+  // Destroy current renderer before window
+  SDL_DestroyWindow(this->window_ptr_);
+  IMG_Quit();
+  SDL_Quit();
 }
 
 
@@ -147,6 +152,14 @@ void ground::update()
   for (animal * animal : zoo)
   {
     animal->draw();
+  }
+}
+
+ground::~ground()
+{
+  for (animal * animal : zoo)
+  {
+    delete animal;
   }
 }
 
