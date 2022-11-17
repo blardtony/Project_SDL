@@ -126,7 +126,6 @@ application::~application()
   // Destroy current renderer before window
   SDL_DestroyWindow(this->window_ptr_);
   IMG_Quit();
-  SDL_Quit();
 }
 
 
@@ -198,6 +197,8 @@ void animal::draw()
     throw std::runtime_error("Bug texture");
 
 }
+
+
 
 //Sheep
 
