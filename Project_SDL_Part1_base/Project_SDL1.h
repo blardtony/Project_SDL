@@ -28,16 +28,16 @@ void init();
 class animal {
   protected:
     int speed;
-    int x;
-    int y;
+    SDL_Rect rect;
+    // SDL_Renderer* window_renderer_ptr_;
   private:
-    SDL_Surface* window_surface_ptr_; // ptr to the surface on which we want the
+    SDL_Renderer* window_renderer_ptr_; // ptr to the surface on which we want the
                                       // animal to be drawn, also non-owning
-    SDL_Surface* image_ptr_; // The texture of the sheep (the loaded image), use
+    SDL_Texture* image_ptr_; // The texture of the sheep (the loaded image), use
                             // load_surface_for
     // todo: Attribute(s) to define its position
   public:
-    animal(const std::string& file_path, SDL_Surface* window_surface_ptr);
+    animal(const std::string& file_path, SDL_Renderer* window_renderer_ptr_);
     // todo: The constructor has to load the sdl_surface that corresponds to the
     // texture
     ~animal(){}; // todo: Use the destructor to release memory and "clean up
@@ -55,14 +55,14 @@ class animal {
 // class sheep, derived from animal
 class sheep : public animal {
   public:
-    sheep(SDL_Surface *window_surface_ptr);
+    sheep(SDL_Renderer *window_renderer_ptr_);
     virtual ~sheep();
     virtual void move();
 };
 
 class wolf : public animal {
   public:
-    wolf(SDL_Surface *window_surface_ptr);
+    wolf(SDL_Renderer *window_renderer_ptr_);
     virtual ~wolf();
     virtual void move();
 };
@@ -77,14 +77,14 @@ class wolf : public animal {
 class ground {
   private:
     // Attention, NON-OWNING ptr, again to the screen
-    SDL_Surface* window_surface_ptr_;
+    SDL_Renderer* window_renderer_ptr_;
 
     // Some attribute to store all the wolves and sheep
     // here
     std::vector<animal *> zoo;
 
   public:
-    ground(SDL_Surface* window_surface_ptr); // todo: Ctor
+    ground(SDL_Renderer* window_renderer_ptr_); // todo: Ctor
     ~ground(); // todo: Dtor, again for clean up (if necessary)
     void add_animal(animal *animal); // todo: Add an animal
     void update(); // todo: "refresh the screen": Move animals and draw them
@@ -96,7 +96,7 @@ class application {
   private:
     // The following are OWNING ptrs
     SDL_Window* window_ptr_;
-    SDL_Surface* window_surface_ptr_;
+    SDL_Renderer* window_renderer_ptr_;
     SDL_Event window_event_;
 
     // Other attributes here, for example an instance of ground

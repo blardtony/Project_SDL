@@ -29,7 +29,7 @@ namespace {
   // Its purpose is to indicate to the compiler that everything
   // inside of it is UNIQUELY used within this source file.
 
-  SDL_Surface* load_surface_for(const std::string& path, SDL_Surface* window_surface_ptr)
+  SDL_Texture* load_surface_for(const std::string& path, SDL_Renderer* window_renderer_ptr, SDL_Rect *rect)
   {
 
     // Helper function to load a png for a specific surface
@@ -41,16 +41,17 @@ namespace {
       throw std::runtime_error("Unable to load image");
     }
 
-    auto optimizedSurface = SDL_ConvertSurface(loadedSurface, window_surface_ptr->format, 0);
     
-    if (optimizedSurface == NULL)
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(window_renderer_ptr, loadedSurface);
+    if (texture == NULL)
     {
       throw std::runtime_error("Unable to optimize image");
     }
-
+    rect->w = loadedSurface->w;
+    rect->h = loadedSurface->h;
     SDL_FreeSurface(loadedSurface);
     
-    return optimizedSurface;
+    return texture;
   }
 } // namespace 
 
@@ -60,50 +61,35 @@ application::application(unsigned n_sheep, unsigned n_wolf)
 {
   std::cout << "Constructor application" << "\n";
   
-  window_ptr_= SDL_CreateWindow(
-    "SDL Project", 
-    SDL_WINDOWPOS_UNDEFINED,
-    SDL_WINDOWPOS_UNDEFINED,
-    frame_width,
-    frame_height,
-    SDL_WINDOW_SHOWN
-  );
-
-  if (!window_ptr_) {
-    throw std::runtime_error("Unable to create window");
+  if (SDL_CreateWindowAndRenderer(frame_width, frame_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE, &window_ptr_, &window_renderer_ptr_) == -1) {
+    throw std::runtime_error("Error create window and renderer");
   }
 
-  window_surface_ptr_ = SDL_GetWindowSurface(window_ptr_);
-
-  if (!window_surface_ptr_) {
-    throw std::runtime_error("Unable to create surface");
-  }
-
-  SDL_FillRect(window_surface_ptr_, NULL, SDL_MapRGB(window_surface_ptr_->format, 143, 233, 50));
+  SDL_SetWindowPosition(window_ptr_, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
   
-  _ground = new ground(window_surface_ptr_);
+  SDL_SetWindowTitle(window_ptr_, "Title window");
+  
+  _ground = new ground(window_renderer_ptr_);
   
   std::srand(time(nullptr));
   for (unsigned i = 0; i < n_sheep; ++i)
   {
-    _ground->add_animal(new sheep(window_surface_ptr_));
+    _ground->add_animal(new sheep(window_renderer_ptr_));
   }
   for (unsigned i = 0; i < n_wolf; ++i)
   {
-    _ground->add_animal(new wolf(window_surface_ptr_));
+    _ground->add_animal(new wolf(window_renderer_ptr_));
   }
 }
 
 int application::loop(unsigned period)
 {
   bool running = true;
-  unsigned lastTime = 0;
-  unsigned startTicks;
 
-  while(running && SDL_GetTicks() - lastTime <= period * 1000)
+  while(running && SDL_GetTicks() <= period * 1000)
   {
-    startTicks = SDL_GetTicks();
-
+    
+    Uint32 start = SDL_GetTicks();
     SDL_Event e;
     while ( SDL_PollEvent( &e ) != 0 ) {
 			if (e.type == SDL_QUIT) {
@@ -111,10 +97,18 @@ int application::loop(unsigned period)
         break;
 			}
 		}
-    _ground->update();
-    SDL_Delay(50);
-    SDL_UpdateWindowSurface(window_ptr_);
 
+    SDL_RenderClear(window_renderer_ptr_);
+
+    _ground->update();
+
+    SDL_RenderPresent(window_renderer_ptr_);
+
+    Uint32 elapsedTime = SDL_GetTicks() - start;
+    
+    if (elapsedTime < frame_rate) {
+      SDL_Delay(frame_rate - elapsedTime);
+    }
   }
   return 0;
 }
@@ -130,9 +124,9 @@ application::~application()
 
 
 //Ground
-ground::ground(SDL_Surface* window_surface_ptr)
+ground::ground(SDL_Renderer* window_renderer_ptr_)
 {
-  window_surface_ptr_ = window_surface_ptr;
+  this->window_renderer_ptr_ = window_renderer_ptr_;
 }
 
 void ground::add_animal(animal *animal)
@@ -146,8 +140,9 @@ void ground::update()
   {
     animal->move();
   }
-  SDL_FillRect(window_surface_ptr_, nullptr,
-                 SDL_MapRGB(window_surface_ptr_->format, 143, 233, 50));
+   if (SDL_SetRenderDrawColor(window_renderer_ptr_, 143, 233, 50, SDL_ALPHA_OPAQUE) != 0)
+            throw std::runtime_error("SDL_SetRenderDrawColor"
+                                    + std::string(SDL_GetError()));
   for (animal * animal : zoo)
   {
     animal->draw();
@@ -181,20 +176,19 @@ int randomPosition(int min, int max)
   return distrib(gen);
 }
 
-animal::animal(const std::string& file_path, SDL_Surface* window_surface_ptr)
+animal::animal(const std::string& file_path, SDL_Renderer* window_renderer_ptr)
 {
-  window_surface_ptr_ = window_surface_ptr;
-  image_ptr_ = load_surface_for(file_path, window_surface_ptr_);
+  window_renderer_ptr_ = window_renderer_ptr;
+  image_ptr_ = load_surface_for(file_path, window_renderer_ptr_, &rect);
   
-  x = randomPosition(frame_boundary, frame_width - frame_boundary - image_ptr_->w);
-  y = randomPosition(frame_boundary, frame_height - frame_boundary - image_ptr_->h);
+  rect.x = randomPosition(frame_boundary, frame_width - frame_boundary - rect.w);
+  rect.y = randomPosition(frame_boundary, frame_height - frame_boundary - rect.h);
 }
 
 void animal::draw()
 {
-  auto rect = SDL_Rect{x, y, image_ptr_->w, image_ptr_->h};
-  if (SDL_BlitSurface(image_ptr_, NULL, window_surface_ptr_, &rect))
-    throw std::runtime_error("Bug texture");
+  if (SDL_RenderCopy(window_renderer_ptr_, image_ptr_, NULL, &rect))
+    throw std::runtime_error("Error SDL Render Copy");
 
 }
 
@@ -202,7 +196,7 @@ void animal::draw()
 
 //Sheep
 
-sheep::sheep(SDL_Surface *window_surface_ptr):animal(sheep_path, window_surface_ptr)
+sheep::sheep(SDL_Renderer *window_renderer_ptr_):animal(sheep_path, window_renderer_ptr_)
 {
   speed = 5;
 }
@@ -214,19 +208,19 @@ sheep::~sheep()
 void sheep::move()
 {
   //TODO if wolf go other side
-  if (x+speed < frame_width - frame_boundary) {
-    x+=speed;
+  if (rect.x+speed < frame_width - frame_boundary) {
+    rect.x+=speed;
   }
   
-  if (y+speed < frame_height - frame_boundary) {
-    y+=speed;
+  if (rect.y+speed < frame_height - frame_boundary) {
+    rect.y+=speed;
   }
 }
 
 
 //Wolf
 
-wolf::wolf(SDL_Surface *window_surface_ptr):animal(wolf_path, window_surface_ptr)
+wolf::wolf(SDL_Renderer *window_renderer_ptr_):animal(wolf_path, window_renderer_ptr_)
 {
   speed = 10;
 }
@@ -239,10 +233,10 @@ wolf::~wolf()
 
 void wolf::move()
 {
-  if (x+speed < frame_width - frame_boundary) {
-    x+=speed;
+  if (rect.x+speed < frame_width - frame_boundary) {
+    rect.x+=speed;
   }
-  if (y+speed < frame_height - frame_boundary) {
-    y+=speed;
+  if (rect.y+speed < frame_height - frame_boundary) {
+    rect.y+=speed;
   }
 }
