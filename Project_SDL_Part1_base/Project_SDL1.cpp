@@ -198,7 +198,8 @@ void animal::draw()
 
 sheep::sheep(SDL_Renderer *window_renderer_ptr_):animal(sheep_path, window_renderer_ptr_)
 {
-  speed = 5;
+  speedX = 5;
+  speedY = 5;
 }
 
 sheep::~sheep()
@@ -208,12 +209,12 @@ sheep::~sheep()
 void sheep::move()
 {
   //TODO if wolf go other side
-  if (rect.x+speed < frame_width - frame_boundary) {
-    rect.x+=speed;
+  if (rect.x+speedX < frame_width - frame_boundary - rect.w) {
+    rect.x+=speedX;
   }
   
-  if (rect.y+speed < frame_height - frame_boundary) {
-    rect.y+=speed;
+  if (rect.y+speedY < frame_height - frame_boundary - rect.h) {
+    rect.y+=speedY;
   }
 }
 
@@ -222,7 +223,8 @@ void sheep::move()
 
 wolf::wolf(SDL_Renderer *window_renderer_ptr_):animal(wolf_path, window_renderer_ptr_)
 {
-  speed = 10;
+  speedX = 6;
+  speedY = 6;
 }
 
 wolf::~wolf()
@@ -233,10 +235,26 @@ wolf::~wolf()
 
 void wolf::move()
 {
-  if (rect.x+speed < frame_width - frame_boundary) {
-    rect.x+=speed;
+  if (rect.x <= frame_boundary) {
+    rect.x = frame_boundary;
+    speedX *= -1;
   }
-  if (rect.y+speed < frame_height - frame_boundary) {
-    rect.y+=speed;
+
+  if (rect.x >= frame_width - frame_boundary - rect.w) {
+    rect.x = frame_width - frame_boundary - rect.w;
+    speedX *= -1;
   }
+
+  if (rect.y <= frame_boundary) {
+    rect.y = frame_boundary;
+    speedY *= -1;
+  }
+
+  if (rect.y >= frame_height - frame_boundary - rect.h) {
+    rect.y = frame_height -  frame_boundary - rect.h;
+    speedY *= -1;
+  }
+  
+  rect.x += speedX;
+  rect.y += speedY;
 }

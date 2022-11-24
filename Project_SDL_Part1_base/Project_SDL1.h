@@ -27,7 +27,8 @@ void init();
 
 class animal {
   protected:
-    int speed;
+    int speedX;
+    int speedY;
     SDL_Rect rect;
     // SDL_Renderer* window_renderer_ptr_;
   private:
