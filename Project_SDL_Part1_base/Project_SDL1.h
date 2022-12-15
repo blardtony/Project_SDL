@@ -10,7 +10,7 @@
 #include <memory>
 #include <optional>
 #include <vector>
-
+#include <set>
 // Defintions
 constexpr double frame_rate = 60.0; // refresh rate
 constexpr double frame_time = 1. / frame_rate;
@@ -117,4 +117,12 @@ class application {
                               // See SDL_GetTicks() and SDL_Delay() to enforce a
                               // duration the application should terminate after
                               // 'period' seconds
+};
+
+class interacting_object {
+  private:
+    std::set<std::string> properties;
+  public:
+    std::set<std::string> get_properties();
+    void set_properties(const std::string property);
 };
