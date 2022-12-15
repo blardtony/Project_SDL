@@ -120,9 +120,18 @@ class application {
 };
 
 class interacting_object {
-  private:
+  protected:
     std::set<std::string> properties;
   public:
     std::set<std::string> get_properties();
     void set_properties(const std::string property);
+};
+
+class rendered_object {
+  protected:
+    SDL_Renderer* window_renderer_ptr_;
+    SDL_Texture* image_ptr_;
+    SDL_Rect rect;
+  public:
+    SDL_Rect get_rect();
 };
