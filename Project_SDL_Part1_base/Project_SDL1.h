@@ -50,6 +50,8 @@ class animal {
 
     virtual void move(){}; // todo: Animals move around, but in a different
                               // fashion depending on which type of animal
+    SDL_Rect get_rect();
+    
 };
 
 // Insert here:
@@ -82,6 +84,8 @@ class ground {
 
     // Some attribute to store all the wolves and sheep
     // here
+    std::vector<wolf *> vect_wolf;
+    std::vector<sheep *> vect_sheep;
     std::vector<animal *> zoo;
 
   public:

@@ -133,9 +133,9 @@ void ground::add_animal(animal *animal)
 {
   zoo.push_back(animal);
 }
-
 void ground::update()
 {
+
   for (animal * animal : zoo)
   {
     animal->move();
@@ -192,7 +192,24 @@ void animal::draw()
 
 }
 
+SDL_Rect animal::get_rect()
+{
+  return rect;
+}
 
+void random_move(int *position, int *speed, int size, int frame)
+{
+  if (*position <= frame_boundary) {
+    *position = frame_boundary;
+    *speed *= -1;
+  }
+
+  if (*position >= frame - frame_boundary - size) {
+    *position = frame - frame_boundary - size;
+    *speed *= -1;
+  }
+  *position += *speed;
+}
 
 //Sheep
 
@@ -207,15 +224,9 @@ sheep::~sheep()
 }
 
 void sheep::move()
-{
-  //TODO if wolf go other side
-  if (rect.x+speedX < frame_width - frame_boundary - rect.w) {
-    rect.x+=speedX;
-  }
-  
-  if (rect.y+speedY < frame_height - frame_boundary - rect.h) {
-    rect.y+=speedY;
-  }
+{ 
+  random_move(&rect.x, &speedX, rect.w, frame_width);
+  random_move(&rect.y, &speedY, rect.h, frame_height);
 }
 
 
@@ -235,26 +246,7 @@ wolf::~wolf()
 
 void wolf::move()
 {
-  if (rect.x <= frame_boundary) {
-    rect.x = frame_boundary;
-    speedX *= -1;
-  }
-
-  if (rect.x >= frame_width - frame_boundary - rect.w) {
-    rect.x = frame_width - frame_boundary - rect.w;
-    speedX *= -1;
-  }
-
-  if (rect.y <= frame_boundary) {
-    rect.y = frame_boundary;
-    speedY *= -1;
-  }
-
-  if (rect.y >= frame_height - frame_boundary - rect.h) {
-    rect.y = frame_height -  frame_boundary - rect.h;
-    speedY *= -1;
-  }
-  
-  rect.x += speedX;
-  rect.y += speedY;
+  random_move(&rect.x, &speedX, rect.w, frame_width);
+  random_move(&rect.y, &speedY, rect.h, frame_height);
 }
+
